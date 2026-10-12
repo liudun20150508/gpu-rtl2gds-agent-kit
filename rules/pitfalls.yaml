@@ -1,0 +1,165 @@
+# 坑知识库 — 个人踩坑 → 团队资产
+#
+# 结构: symptom(报错特征) -> diagnosis(根因) -> fix(修复模板) -> verify(验证)
+# 用法: 工程师确认新坑后直接追加一条, 全组免疫; 也可被 engine 检索匹配。
+# 字段 keywords 用于症状模糊匹配 (engine/kb.py)。
+
+- id: PIT-001
+  title: 标准单元库里 DFF/latch 单元缺内部引脚声明 → OpenROAD 段错误
+  stage: read_liberty
+  severity: blocker
+  symptom:
+    - "Signal 11 received"
+    - "makePortFuncs"
+    - "function references unknown port IQ"
+  diagnosis: >
+    部分开源 PDK 的 .lib 中 dfxtp/dfrtp/sdfxtp 等约 63 个 DFF/latch 单元,
+    pin(Q/Q_N) 的 function 引用了内部节点 IQ/IQ_N, 但单元内未声明该引脚。
+    OpenROAD 内置 OpenSTA 解析到 makePortFuncs 时直接段错误。
+  fix: |
+    patch_lib.py: 按 cell 块扫描, function 引用的端口未声明时,
+    插入 "pin(IQ) { direction : internal; }" (插入点必须在行首 pin/pg_pin 声明前)。
+    生成"补丁库", 原始 PDK 库保持不动。注意: yosys/abc 读原库没问题, 补丁库只给 OpenROAD。
+  verify: read_liberty 通过, 无 Signal 11
+  keywords: [liberty, segfault, signal11, iq, opensta, openroad, makePortFuncs]
+
+- id: PIT-002
+  title: OpenROAD 的内置 Verilog 解析器不支持 signed 声明/字面量
+  stage: read_verilog
+  severity: blocker
+  symptom:
+    - "syntax error"
+    - "STA-0171"
+  diagnosis: >
+    yosys 门级网表含 "wire signed [31:0]" 声明 (sv2v 循环变量转换而来) 和
+    有符号字面量 32'sd128; OpenROAD 内置解析器不支持。
+  fix: |
+    clean_netlist.py:
+      wire signed  -> wire
+      (\d+)'s([dhbo]) -> \1'\2   (去有符号字面量)
+      黑盒 RAM 参数 #(...) 展平 + 行为体移除 + 端口宽度参数替换为数值
+  verify: read_verilog 通过, 无 STA-0171
+  keywords: [signed, syntax, verilog, netlist, openroad, sta-0171, sv2v]
+
+- id: PIT-003
+  title: 网表单元库与后端工艺不匹配 (45nm 学术库网表跑 130nm 后端)
+  stage: link_design
+  severity: blocker
+  symptom:
+    - "module .*_X1 not found"
+    - "Creating black box"
+    - "LEF master .* not found"
+    - "ORD-2013"
+  diagnosis: >
+    综合用的库 (DFF_X1/BUF_X1/OAI222_X1) 与后端读取的 LEF 不是同一工艺,
+    link_design 找不到单元。必须用目标工艺库重新综合。
+  fix: |
+    用目标工艺库重综合: yosys + flow/synth/02_synth_sky130.sh (abc -D <period>),
+    黑盒 RAM 定义照旧追加。不要试图桥接两套库。
+  verify: link_design 无 master not found, DEF 单元名全部属于目标工艺库
+  keywords: [nangate, sky130, link_design, master, not found, blackbox, ord-2013]
+
+- id: PIT-004
+  title: 补丁库喂给 yosys/abc 导致时序表缺失
+  stage: synth_abc
+  severity: blocker
+  symptom:
+    - "Table cannot be found"
+    - "Can't open ABC output file"
+  diagnosis: >
+    为 OpenROAD 打的极简 pin 补丁 (无电容/无时序表) 让 abc 的 liberty 读取器
+    找不到时序表。abc 对原始库无此问题。
+  fix: 两库分离 - 综合用原始库, 补丁库只给 OpenROAD 用
+  verify: abc 正常输出 mapped 网表, OpenROAD read_liberty 亦正常
+  keywords: [abc, yosys, table, liberty, patch, dfflibmap]
+
+- id: PIT-005
+  title: SPEF 中负索引总线名的转义字符导致 STA 解析失败
+  stage: sta_signoff
+  severity: blocker
+  symptom:
+    - "STA-1670"
+    - "read_spef ... syntax error"
+    - "mem_req_addr[\\-1]"
+  diagnosis: >
+    寄生提取工具把负索引总线名写成 mem[\-1]; tokenizer 在 bus index 里遇到
+    转义符即报 syntax error。[0] 这类正常索引可被容忍, 只有 [\-1] 里的反斜杠致命。
+  fix: |
+    flow/fixes/fix_spef_negidx.py <坏.spef> <好.spef>
+    重写为 \[-1\] (括号转义 + 去掉减号前多余反斜杠);
+    注意: 直觉写法 \[\-1\] 依然报错, 已实测。
+    脚本 docstring 必须是 raw string (r"""), 否则 SyntaxWarning 走 stderr
+    会让 Tcl 的 exec 误判为失败而不执行 rename。
+    修复后只需重跑 6_report, 无需重跑布线/提取。
+  verify: read_spef exit 0 (实测 789MB SPEF 中仅 63 处, 修复后 2100 万行全量解析通过)
+  keywords: [spef, sta-1670, syntax, openrcx, negative, index, escape]
+
+- id: PIT-006
+  title: make 把失败的 stage 当成已完成 ("假跳过")
+  stage: flow_driver
+  severity: major
+  symptom:
+    - "重跑 make 后目标 stage 未执行"
+    - "日志时间戳未更新"
+  diagnosis: >
+    make 以日志文件是否存在判断 stage 完成; 失败的 stage 也会留下日志文件,
+    于是后续 make 直接跳过该 stage, 造成"看起来跑过了其实没跑"。
+  fix: 重跑前必须删除 logs/.../<stage>.log 及其同名 .json
+  verify: 重跑后日志时间戳更新, 产物 odb 重新生成
+  keywords: [make, orfs, skip, log, rerun, stale]
+
+- id: PIT-007
+  title: 综合后宏数量为 0 (N_MACROS=0) 被误判为缺陷
+  stage: synth
+  severity: info
+  symptom:
+    - "N_MACROS=0"
+    - "fakeram 未被实例化"
+  diagnosis: >
+    综合阶段 SRAM 已被映射为寄存器阵列, fakeram 仅作占位。
+    这是预期行为, 不是缺陷; 真正的宏在后续阶段由 PDK 提供的宏替换。
+  fix: 无需修复; 若需真实宏, 在 floorplan 前替换为 PDK 宏并重跑
+  verify: 寄存器阵列面积在 stat 报告中可见
+  keywords: [macro, fakeram, sram, synth, n_macros]
+
+- id: PIT-008
+  title: 开源工具缺少商业专有命令
+  stage: floorplan
+  severity: major
+  symptom:
+    - "invalid command name set_instance_region"
+    - "invalid command name set_shielded_net"
+  diagnosis: 开源 APR 工具未实现部分商业专有命令。
+  fix: |
+    语义等价替代, 并在报告如实标注:
+      区域约束     -> group_path (SDC 层) + 布局引导
+      屏蔽/串扰    -> 加宽间距 + 电源带加倍 (pdn.tcl 中 pitch 减半)
+  verify: 替代后约束生效 (关键路径 weight 生效, PDN 电流密度改善)
+  keywords: [set_instance_region, set_shielded_net, commercial, proprietary, workaround]
+
+- id: PIT-009
+  title: 详细布线阶段栈溢出 (深度递归)
+  stage: detailed_route
+  severity: blocker
+  symptom:
+    - "Signal 11 received"
+    - "boost::polygon::MaxCover"
+  diagnosis: 详细布线在复杂版图上触发深递归, 默认线程栈 (约 8MB) 不够。
+  fix: ulimit -s 65536 后重跑 (调大栈上限, 不是工具 bug)
+  verify: 详细布线完成, 无 Signal 11
+  keywords: [drt, detailed_route, stack, overflow, signal11, ulimit, maxcover]
+
+- id: PIT-010
+  title: 内存不足导致进程被 OOM kill, 误判为工具崩溃
+  stage: route
+  severity: blocker
+  symptom:
+    - "Signal 9"
+    - "Killed"
+    - 无工具自身报错信息
+  diagnosis: >
+    多线程并行时峰值内存超限, 被内核 OOM killer 杀掉。
+    32GB 机器上跑大规模设计时, -jN (N>1) 极易触发。
+  fix: 强制 -j1 串行跑; 必要时分段跑各 stage 以释放内存
+  verify: 流程完整跑完, dmesg 无 oom-kill 记录
+  keywords: [oom, killed, signal9, memory, -j1, parallel]

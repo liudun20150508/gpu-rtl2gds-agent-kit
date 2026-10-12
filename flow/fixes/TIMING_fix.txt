@@ -1,0 +1,2 @@
+## TIMING
+定位关键路径起点/终点(报告 Startpoint/Endpoint); 若路径在 FPU/FMA 数据通路 ->retiming 平衡流水级 + 路径上插 buffer 分组; 若周期压不动 -> 降频重跑收敛;45nm typical 下该设计 fmax 约 650~700MHz

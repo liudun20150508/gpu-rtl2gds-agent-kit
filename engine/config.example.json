@@ -1,0 +1,14 @@
+{
+  "mode": "offline",
+  "openai": {
+    "base_url": "https://api.openai.com/v1",
+    "api_key": "sk-REPLACE_WITH_YOUR_KEY",
+    "model": "gpt-4o"
+  },
+  "ollama": {
+    "base_url": "http://localhost:11434",
+    "model": "qwen2.5-coder:14b"
+  },
+  "max_iterations": 5,
+  "slack_threshold_ps": 0.0
+}

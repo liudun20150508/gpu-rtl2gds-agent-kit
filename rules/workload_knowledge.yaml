@@ -1,0 +1,86 @@
+# AI 负载特征 → 物理设计策略知识库
+#
+# 用途: 把大模型推理/微调负载的访存与计算特征翻译成可执行的物理实现策略,
+#       供 agent 诊断报告后检索, 或由 engine/netlist_bind.py 生成实例级约束。
+#
+# 顶层结构:
+#   workloads: 负载特征列表 (检索用)
+#   binding:   实例级绑定表 (netlist_bind 用)
+#
+# 结构: workload(负载特征) -> traffic(为什么是瓶颈) -> actions(物理策略列表)
+#       -> signoff(该项要额外签核什么)
+
+workloads:
+  - workload: KV cache (键值缓存)
+    traffic: >
+      每个 token 写入 2 * n_layer * n_kv_head * d_head * dtype 字节;
+      读带宽随 seq_len 增长, 长上下文下成为存储带宽瓶颈。
+    actions:
+      - "SRAM 宏(KV cache 常驻区)贴近 LSU/AGU, 缩短地址路径, 降低动态功耗"
+      - "写端口 1 读端口 1 的宏改双 bank 分组, 错开读写地址, 避免同 bank 端口冲突"
+      - "页表放 LMEM(软件管理的 scratchpad), 查表走低延迟路径, 宏间距留足时钟树余量"
+      - "tag/data 阵列宏按字线方向对齐, 减少绕线拥塞 (统一宏方向, 预留 routing channel)"
+      - "时钟 gating 分组: 未命中 KV 行的 bank 整块关时钟, 降低平均电流"
+    signoff: "DRC/LVS + IR/EM: KV 宏电源网络加宽; 写突发时 di/dt 大, 检查动态压降 < 5% VDD"
+
+  - workload: MoE (专家并行 / 稀疏激活)
+    traffic: "token 路由到 top-k 专家: all-to-all 通信, 激活稀疏, 通信计算比高"
+    actions:
+      - "专家层分片: 每个 expert 的 GEMM 阵列单独做区域化 floorplan, 簇内拥塞隔离"
+      - "all-to-all 交换网络(NoC)与各 expert 宏等距布局, 路由链均衡 -> 时钟树 skew 收敛"
+      - "稀疏激活: expert 阵列间做电源域隔离, 未激活 expert 下电 (需 UPF 电源意图)"
+      - "gateway 队列(每专家输入队列)SRAM 紧邻路由节点, 降低 hop 延迟"
+    signoff: "低功耗静态检查: 电源开关单元插入合法性; SI: all-to-all 总线加 shield 与防护间距"
+
+  - workload: 张量并行 (TP) / 流水并行 (PP)
+    traffic: "TP 每层 2 次 all-reduce; PP 层间只传激活, 通信少但气泡多; 均涉及跨 die 同步"
+    actions:
+      - "HBM PHY 布局在 die 边缘, 与内存控制器 co-placement, PHY 供电/地回路最短"
+      - "die-to-die 接口: 跨 die 时钟采用 forwarded clock, 后端固定 skew 预算, 在 pre-CDS 收敛"
+      - "all-reduce 环(torus/ring)拓扑: 相邻 die 接口宏对齐, 减少跨 die 布线长度差"
+      - "分层时钟树: PHY 时钟域与核心时钟域隔离, 避免跨域时钟树合并"
+    signoff: "多 corner 时序; PHY 接口用 source-synchronous 约束 + data skew check"
+
+  - workload: QKV 计算 (注意力数据通路)
+    traffic: "以 GEMM 为主: Q*K^T 内积、attn*V; 计算密度高, 数据复用率高"
+    actions:
+      - "MAC 阵列数据通路直通布局: 权重/激活寄存器堆紧邻乘法器阵列, 减少 wirelength"
+      - "retiming: 在 FMA 阵列中平衡流水级延迟, 配合 abc 映射"
+      - "时钟树平衡: MAC 阵列扇出大, 用 H-tree + 局部 mesh, skew 目标 < 30ps"
+      - "操作数转发总线加 shield, 避免串扰导致的时序失效"
+    signoff: "时序: 关键路径常在 attn score 计算, 用 useful skew 优化; IREM: 乘法阵列电流密度均匀性"
+
+  - workload: HBM (高带宽存储)
+    traffic: "HBM 堆叠 DRAM 在片外 (2.5D interposer); 芯片内部是 HBM PHY + 控制器"
+    actions:
+      - "HBM PHY 宏固定于 die 边缘, 靠近 bump, PHY 宏 pin 朝向统一"
+      - "内存控制器与 PHY 对齐布局, DFI 接口布线短直, 固定在高层金属"
+      - "PHY 区域电源网络独立加固 (power strap 加倍), IR drop 预算单独签核"
+      - "interposer 布线属 2.5D 封装设计; 芯片侧只需保证 bump map 与 PHY pin 对齐, 输出 bump 坐标约束"
+    signoff: "IR/EM: PHY 供电网络单独验证; LVS: PHY 宏 GDS 与 bump 对应关系检查"
+
+# ---------------------------------------------------------------------------
+# 实例级绑定表: 负载特征 -> 网表模块名 (供 engine/netlist_bind.py 使用)
+# 换设计时替换模块名即可, 策略字段与上表一一对应。
+# ---------------------------------------------------------------------------
+binding:
+  kv_cache:
+    modules: [cache_data, cache_tags, cache_mshr, local_mem, cache_wrap, cache_cluster]
+    region: left_bottom
+    priority: mem
+    strategy: "宏贴近 LSU/AGU; 双 bank 错开读写端口; 电源带加倍; 时钟 gating 分组"
+  qkv_gemm:
+    modules: [fpu_unit, fma_unit, alu_unit, alu_muldiv, multiplier, wallace_mul, fpu_std, lsu_unit]
+    region: center
+    priority: datapath
+    strategy: "数据通路直通布局; retiming 平衡流水级; skew < 30ps"
+  moe_noc:
+    modules: [mem_xbar, stream_xbar, stream_switch, priority_arbiter, rr_arbiter, matrix_arbiter, socket, cluster]
+    region: center_ring
+    priority: noc
+    strategy: "等距布局, 路由链均衡; 总线加 shield; 专家区域可下电"
+  tp_hbm:
+    modules: [axi, mem_axi, membus_to_axi, mem_from_axi, mm_axi, kmu]
+    region: io_ring
+    priority: io
+    strategy: "接口宏固定 die 边缘; 控制器与 PHY co-placement; 独立电源域"

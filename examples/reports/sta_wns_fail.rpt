@@ -1,0 +1,32 @@
+Worst negative slack (WNS): -0.35
+Total negative slack (TNS): -12.480
+Period: 20.0
+
+Startpoint: core/u_decoder/state_reg[2]
+            (rising edge-triggered flip-flop clocked by clk)
+Endpoint:   core/u_alu/result_reg[15]
+            (rising edge-triggered flip-flop clocked by clk)
+Path Group: clk
+Path Type:  max
+
+  slack (VIOLATED)   -0.35
+     0.00   clock clk (rise edge)
+     0.12   clock network delay (propagated)
+     0.00   core/u_decoder/state_reg[2]/CLK (dfxtp_1)
+     1.84   core/u_decoder/state_reg[2]/Q (dfxtp_1)
+     6.02   core/u_alu/u_mult/C[31] (alu_muldiv)
+     4.91   core/u_alu/result_reg[15]/D (dfxtp_1)
+     0.00   data arrival time   12.89
+
+     20.00  clock clk (rise edge)
+    -0.12   clock network delay (propagated)
+     0.00   clock uncertainty
+    -0.20   library setup time
+     19.68  data required time
+
+  worst slack   -0.35
+  tns           -12.48
+
+Report : timing
+Design : core_top
+Tool   : OpenSTA

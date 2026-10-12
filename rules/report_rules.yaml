@@ -1,0 +1,87 @@
+# 阶段规则库 — 报告症状 → 修复动作
+#
+# 用途: 规则引擎 (engine/knowledge.py) 在 LLM 不可用时的 fallback,
+#       也作为 LLM 诊断的检索上下文。
+# 匹配: stage 相等 且 symptom 中任一关键词出现在报告文本中 (见 engine/diagnose.py)。
+#
+# 字段:
+#   stage    : SYN | APR | TIMING | PV | IREM | LEC | VCLP
+#   symptom  : 关键词列表 (子串匹配, 大小写不敏感)
+#   action   : 具体修复动作
+#   tool     : 开源工具 / 商业工具 对照
+#   verify   : 修复后的验证方式
+
+- stage: SYN
+  symptom: ["timing", "slack<0", "WNS", "negative slack"]
+  action: >
+    综合时序不收敛: 先用 abc -D <period> 按目标周期约束驱动重综合;
+    若仍不收敛, 检查是否频率目标过于激进 (深流水数据通路在低端工艺上受限);
+    打开 retiming 平衡流水级; 乘法器确认使用 Wallace/CSA 结构而非行为级 *
+  tool: "yosys abc -D / Design Compiler compile_ultra -retime"
+  verify: "重综合后 stat 报告 WNS >= 0, 或给出可达 fmax"
+
+- stage: SYN
+  symptom: ["area", "cell_count", "面积超预算"]
+  action: >
+    面积超预算: 检查 SRAM 黑盒面积是否被计入 (宏面积应单独估算);
+    乘法器改 CSA+Wallace 结构; 用结构共享 (share) 消除重复子表达式;
+    确认未把 test-only 逻辑带进综合
+  tool: "yosys share / Design Compiler compile_ultra -area"
+  verify: "Chip area 下降且时序仍满足"
+
+- stage: APR
+  symptom: ["congestion", "overflow", "拥塞"]
+  action: >
+    布线拥塞: 拥塞区域提高 cell padding; 宏间预留 routing channel (全互连总线场景留 30um 级);
+    层分配 - 全局总线走高层金属 (M5/M6 以上), 局部走低层;
+    调整 global routing layer adjustment 的层权重
+  tool: "OpenROAD set_global_routing_layer_adjustment / ICC2 congestion repair"
+  verify: "global route overflow = 0"
+
+- stage: TIMING
+  symptom: ["worst slack", "wns", "tns", "violated"]
+  action: >
+    时序违例: 先定位关键路径的 Startpoint/Endpoint 判断归属模块;
+    若落在算术数据通路 (FMA/乘法器阵列) -> retiming 平衡流水级 + 路径插 buffer 分组;
+    若落在跨模块长线 -> 调整布局 (缩短 wirelength) 或插寄存器;
+    若周期本身压不动 -> 如实降频并在报告中记录可达 fmax
+  tool: "OpenSTA report_checks / PrimeTime report_timing"
+  verify: "report_worst_slack -max 与 -min 均 >= 0"
+
+- stage: PV
+  symptom: ["DRC", "violation", "天线", "antenna"]
+  action: >
+    DRC 违规按规则类别分组处理 (不要逐条修):
+    金属间距 -> 局部重绕线; 天线违规 -> 插二极管或跳层;
+    宏边界 halo 冲突 -> 调整宏间距;
+    先判断违规是否来自标准单元库内部 (库级豁免), 这决定修设计还是换库
+  tool: "KLayout deck / Calibre DRC / ICV"
+  verify: "违规数归零或全部归因于库级豁免并逐条说明"
+
+- stage: IREM
+  symptom: ["IR", "drop", "EM", "压降"]
+  action: >
+    压降超标: 热点区域 power strap 加宽加密 (pitch 减半);
+    高翻转率模块 (cache 写端口) 周围加 decap;
+    电源网络分层 - 低层 follow-pin, 高层 mesh;
+    若为动态压降需向量激励, 属商业工具范畴
+  tool: "OpenROAD PSM / RedHawk / Voltus"
+  verify: "静态 IR drop < 5% VDD"
+
+- stage: LEC
+  symptom: ["nonequivalent", "mismatch", "不等价"]
+  action: >
+    等价性失败: 检查 dfflibmap 重映射是否改变了触发器复位行为;
+    检查 sv2v 转换是否丢失初始值 -> 回读 RTL 对比;
+    黑盒宏必须 RTL 与网表同名同参, 否则等价性不成立
+  tool: "Yosys equiv / Formality / Conformal"
+  verify: "equiv_status -assert 通过"
+
+- stage: VCLP
+  symptom: ["isolation", "level-shifter", "电源域"]
+  action: >
+    低功耗检查: 电源域接口缺 isolation cell -> 补插;
+    level-shifter 电压域配对错误 -> 修 UPF 描述;
+    电源开关单元插入合法性检查
+  tool: "检查清单 / VC LP"
+  verify: "电源域接口无缺失, UPF 静态检查通过"

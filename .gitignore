@@ -1,0 +1,50 @@
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# --- 本地密钥（绝不可入库）---
+engine/config.json
+*.key
+.env
+
+# --- 后端流程中间产物（体积大，用 flow/ 脚本复现）---
+run/
+signoff/
+build/
+*.odb
+*.gds
+*.gdsii
+*.spef
+*.def
+*.saif
+*.vcd
+*.fsdb
+*.lvsdb
+*.log
+
+# --- 但保留示例与报告模板 ---
+!examples/**/*.log
+!examples/**/*.rpt
+!examples/**/*.v
+
+# --- 商业 PDK（授权物，禁止分发）---
+pdk/
+pdks/*/
+!pdks/README.md
+*.lib
+!examples/**/*.lib
+*.lef
+!examples/**/*.lef
+*.nxtgrd
+*.itf
