@@ -220,7 +220,7 @@ if [ "$WITH_ORFS" = 1 ]; then
     echo "== OpenROAD-flow-scripts =="
     target="${ORFS_ROOT:-$HOME/tools/OpenROAD-flow-scripts}"
     if [ -d "$target" ]; then
-        echo "已存在: $target（跳过克隆）"
+        echo "已存在: ${target}（跳过克隆）"
     else
         echo "将克隆到: $target"
         if [ "$DRY" = 1 ]; then

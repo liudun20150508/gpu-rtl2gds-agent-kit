@@ -66,7 +66,8 @@ gpu-rtl2gds-agent-kit/
 │   └── fixes/             #    修复模板（SPEF 负索引等）
 │
 ├── designs/               # ⑤ 示例设计（RTL，开箱即用）
-│   ├── README.md          #    tiny-npu 自带示例 + vortex/picorv32 的 clone 接入说明
+│   ├── fetch.sh           #    第三方设计下载（vortex / picorv32）+ PDK 就绪检测
+│   ├── README.md          #    tiny-npu 自带示例 + 第三方设计的接入说明
 │   └── tiny-npu/rtl/      #    INT8 Transformer 加速器（36 文件 / 372K，自研）
 │
 ├── adapters/              # ⑥ 各 agent 的接法文档

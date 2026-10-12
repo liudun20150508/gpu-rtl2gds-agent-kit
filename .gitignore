@@ -39,6 +39,9 @@ build/
 !examples/**/*.v
 !examples/**/*.vcd
 
+# --- 第三方设计下载目录（designs/fetch.sh 的落点）---
+designs/_third_party/
+
 # --- 商业 PDK（授权物，禁止分发）---
 pdk/
 pdks/*/

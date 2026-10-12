@@ -11,7 +11,7 @@ PY    ?= python3
 AGENT ?=
 SCOPE ?= project
 
-.PHONY: help install uninstall doctor deps deps-install fixes fixes-list demo test clean
+.PHONY: help install uninstall doctor deps deps-install fixes fixes-list fetch fetch-list fetch-all demo test clean
 
 help:
 	@echo "gpu-rtl2gds-agent-kit"
@@ -23,6 +23,9 @@ help:
 	@echo "  make deps-install                                   安装缺失的依赖"
 	@echo "  make fixes                                          列出流程修复（含环境自检）"
 	@echo "  make fixes-list                                     只列出修复清单"
+	@echo "  make fetch                                          第三方设计自检（已下载？PDK 就绪？）"
+	@echo "  make fetch-list                                     列出可下载的第三方设计"
+	@echo "  make fetch-all                                      下载全部第三方设计"
 	@echo "  make demo                                           规则引擎示例"
 	@echo "  make test                                           引擎单元测试"
 	@echo ""
@@ -49,6 +52,15 @@ fixes:
 
 fixes-list:
 	./flow/fixes/apply_fixes.sh --list
+
+fetch:
+	./designs/fetch.sh --check
+
+fetch-list:
+	./designs/fetch.sh --list
+
+fetch-all:
+	./designs/fetch.sh --fetch all
 
 demo:
 	$(PY) -m engine analyze --stage TIMING --report examples/reports/sta_wns_fail.rpt --no-llm

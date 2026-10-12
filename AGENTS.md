@@ -66,6 +66,7 @@ Claude Code 读取 `CLAUDE.md`，见 `adapters/claude-code/README.md`）。
 ```bash
 make install            # 部署知识库到已探测到的 agent
 make doctor             # 环境与部署自检
+make fetch              # 第三方设计自检（vortex / picorv32 是否已下载、PDK 是否就绪）
 make demo               # 规则引擎跑一次示例报告
 make test               # 引擎单元测试
 python3 -m engine pitfalls --text "STA-1670"   # 坑库检索

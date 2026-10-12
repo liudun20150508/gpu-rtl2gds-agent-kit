@@ -82,11 +82,12 @@ yosys -p "read_verilog -sv designs/tiny-npu/rtl/pkg/*.sv \
 「多核布局 / 时钟树 / 布线拥塞」那条线的实战对象。
 
 它**不放在本仓库**：这是第三方项目，搬进来会产生版本漂移，也让仓库从知识库变成工程镜像。
-从上游取：
+用仓库自带的下载脚本取（默认落到 `.gitignore` 覆盖的 `designs/_third_party/`，不会误提交）：
 
 ```bash
-git clone https://github.com/vortexgpgpu/vortex.git
-export TINYNPU_RTL=/path/to/vortex/rtl     # 后端脚本据此找 RTL
+./designs/fetch.sh --list                  # 可下载项：体积 / 许可 / 上游地址
+./designs/fetch.sh --fetch vortex          # 下载 vortex
+export TINYNPU_RTL=$PWD/designs/_third_party/vortex/rtl   # 后端脚本据此找 RTL
 ```
 
 - **许可**：BSD 3-Clause，**以上游仓库自带的 LICENSE 为准**
@@ -102,7 +103,7 @@ export TINYNPU_RTL=/path/to/vortex/rtl     # 后端脚本据此找 RTL
 就是拿它验证出来的：
 
 ```bash
-git clone https://github.com/YosysHQ/picorv32.git
+./designs/fetch.sh --fetch picorv32        # 下载到 designs/_third_party/picorv32
 ```
 
 它自带的 `COPYING` 是 ISC 许可；**一旦要用，请连同上游许可文件一起保留**。
