@@ -65,10 +65,14 @@ gpu-rtl2gds-agent-kit/
 │   ├── make_schematic.py  #    门级网表 → 逻辑设计图/原理图
 │   └── fixes/             #    修复模板（SPEF 负索引等）
 │
-├── adapters/              # ⑤ 各 agent 的接法文档
-├── examples/              # ⑥ 示例数据（时序 CSV、扫描链 testbench 与 VCD）
-├── docs/                  # ⑦ 架构文档 + figures/（版图·原理图·时序·波形 四类图）
-└── tests/                 # 引擎单元测试（14 个用例）
+├── designs/               # ⑤ 示例设计（RTL，开箱即用）
+│   ├── README.md          #    tiny-npu 自带示例 + vortex/picorv32 的 clone 接入说明
+│   └── tiny-npu/rtl/      #    INT8 Transformer 加速器（36 文件 / 372K，自研）
+│
+├── adapters/              # ⑥ 各 agent 的接法文档
+├── examples/              # ⑦ 示例数据（时序 CSV、扫描链 testbench 与 VCD）
+├── docs/                  # ⑧ 架构文档 + figures/（版图·原理图·时序·波形 四类图）
+└── tests/                 # ⑨ 引擎单元测试（14 个用例）
 ```
 
 ---

@@ -12,6 +12,7 @@ Claude Code 读取 `CLAUDE.md`，见 `adapters/claude-code/README.md`）。
 | 知识库 | `skills/` | 5 个技能：流程运维、签核链、晶圆厂对接、商业 EDA、DFT/ATPG |
 | 规则引擎 | `rules/` + `engine/` | 坑库 + 阶段诊断规则 + 负载知识；Python 引擎检索与闭环 |
 | 流程本体 | `flow/` | 综合/APR/TCL 阶段脚本/DFT 链/修复模板，全部工艺无关 |
+| 示例设计 | `designs/` | tiny-npu（INT8 Transformer 加速器，自研 RTL）开箱即用；vortex / picorv32 只给上游 clone 指引 |
 | 适配层 | `adapters/` + `install.sh` | 分发给 Claude Code / Reasonix / Codex / OpenClaw |
 
 **它不是 EDA 引擎**：真正的 RTL2GDS 执行由 Yosys / OpenROAD / OpenSTA / KLayout 完成，
@@ -25,7 +26,10 @@ Claude Code 读取 `CLAUDE.md`，见 `adapters/claude-code/README.md`）。
 3. **用引擎**：`python3 -m engine analyze --stage TIMING --report <报告>` 得到结构化诊断；
 4. **跑流程**：`source flow/env.sh` 后按 `flow/README.md` 执行，**不要硬编码路径**；
 5. **改知识而不是改代码**：新增经验请改 `rules/*.yaml` 或对应 `SKILL.md`，
-   引擎代码不含任何硬编码规则。
+   引擎代码不含任何硬编码规则；
+6. **要跑真实设计**：用随仓的 `designs/tiny-npu/rtl/`（INT8 Transformer 加速器，36 文件，自研）；
+   Vortex GPGPU / picorv32 不随仓，按 `designs/README.md` 从上游 clone ——
+   接入自己的设计看同文件的 env.sh 变量表（`TINYNPU_RTL` / `DESIGN_TOP`）。
 
 ## 技能索引
 

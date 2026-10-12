@@ -28,7 +28,7 @@ export YOSYS_EXE="${YOSYS_EXE:-$(command -v yosys 2>/dev/null || true)}"
 export KLAYOUT_CMD="${KLAYOUT_CMD:-$(command -v klayout 2>/dev/null || true)}"
 
 # ---- 设计源（示例设计；换成自己的设计时覆盖它）----
-export TINYNPU_RTL="${TINYNPU_RTL:-$PWD/tiny-npu}"
+export TINYNPU_RTL="${TINYNPU_RTL:-$PWD/designs/tiny-npu/rtl}"
 export DESIGN_TOP="${DESIGN_TOP:-top}"
 
 # ---- 并行度：大型设计在 32GB 机器上必须 -j1，否则 route 阶段 OOM ----
