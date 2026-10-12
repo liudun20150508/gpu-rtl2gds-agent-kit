@@ -1,4 +1,4 @@
-# rtl2gds-agent-kit
+# gpu-rtl2gds-agent-kit
 
 > **把数字后端（RTL2GDS）的工程经验，做成 AI agent 可以直接用的知识库。**
 >
@@ -29,7 +29,7 @@ Yosys / OpenROAD / OpenSTA / KLayout 完成；本仓库负责**知识、规则�
 ## 2. 目录结构
 
 ```
-rtl2gds-agent-kit/
+gpu-rtl2gds-agent-kit/
 ├── AGENTS.md              # 跨 agent 通用入口（Codex/Reasonix/OpenClaw 读取）
 ├── install.sh             # 一键部署到各 agent（探测/部署/自检/卸载）
 ├── Makefile               # make install / doctor / demo / test
@@ -76,8 +76,8 @@ rtl2gds-agent-kit/
 ## 3. 快速开始（3 步）
 
 ```bash
-git clone <this-repo> rtl2gds-agent-kit
-cd rtl2gds-agent-kit
+git clone <this-repo> gpu-rtl2gds-agent-kit
+cd gpu-rtl2gds-agent-kit
 
 make doctor     # ① 环境自检：agent 探测 + 依赖检查 + 部署状态
 make test       # ② 验证规则引擎可用（14 个用例）
@@ -126,7 +126,7 @@ python3 -m engine optimize --stage TIMING --run "make sta" --reports wns.rpt
 
   ```toml
   [skills]
-  paths = ["/absolute/path/to/rtl2gds-agent-kit/skills"]
+  paths = ["/absolute/path/to/gpu-rtl2gds-agent-kit/skills"]
   ```
 
 细节见 `adapters/<agent>/README.md`。

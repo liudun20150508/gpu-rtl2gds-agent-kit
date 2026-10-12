@@ -1,11 +1,11 @@
-# Claude Code 项目说明模板 —— rtl2gds-agent-kit
+# Claude Code 项目说明模板 —— gpu-rtl2gds-agent-kit
 #
 # 用法：复制到你的业务项目根目录作为 CLAUDE.md，或追加到已有 CLAUDE.md 末尾。
 # 把 <KIT> 替换为本仓库的实际绝对路径。
 
 ## 数字后端（RTL2GDS）知识库
 
-本项目涉及芯片后端流程时，优先使用 rtl2gds-agent-kit 的知识库，不要凭通用经验自己写后端约束。
+本项目涉及芯片后端流程时，优先使用 gpu-rtl2gds-agent-kit 的知识库，不要凭通用经验自己写后端约束。
 
 - 知识库根目录：`<KIT>`
 - 技能（先读）：`<KIT>/skills/<name>/SKILL.md`

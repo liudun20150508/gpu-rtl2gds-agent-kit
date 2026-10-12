@@ -1,4 +1,4 @@
-"""rtl2gds-agent-kit 规则引擎。
+"""gpu-rtl2gds-agent-kit 规则引擎。
 
 把后端流程的报告产物变成结构化诊断与修复动作。
 知识数据一律来自仓库根 rules/*.yaml，代码不硬编码规则。

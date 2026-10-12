@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================
-# rtl2gds-agent-kit · 部署脚本
+# gpu-rtl2gds-agent-kit · 部署脚本
 #
 # 把本仓库的知识库（skills/ + AGENTS.md）分发给本机已安装的 AI agent：
 #   Claude Code  → <target>/.claude/skills/     （或 ~/.claude/skills）
@@ -25,8 +25,8 @@ set -uo pipefail
 KIT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 SKILLS_SRC="$KIT_ROOT/skills"
 AGENTS_MD="$KIT_ROOT/AGENTS.md"
-MARK_BEGIN="# >>> rtl2gds-agent-kit >>>"
-MARK_END="# <<< rtl2gds-agent-kit <<<"
+MARK_BEGIN="# >>> gpu-rtl2gds-agent-kit >>>"
+MARK_END="# <<< gpu-rtl2gds-agent-kit <<<"
 
 SCOPE="project"
 TARGET="$PWD"
@@ -202,7 +202,7 @@ PY
 
 # ---- 自检 ----
 doctor() {
-    echo "== rtl2gds-agent-kit 自检 =="
+    echo "== gpu-rtl2gds-agent-kit 自检 =="
     echo "仓库: $KIT_ROOT"
     echo "技能: $(skill_names | wc -l | tr -d ' ') 个 → $(skill_names | tr '\n' ' ')"
     echo "规则: $(ls -1 "$KIT_ROOT/rules" 2>/dev/null | wc -l | tr -d ' ') 个文件"
@@ -237,7 +237,7 @@ case "$ACTION" in
     doctor)    doctor ;;
     uninstall) echo "卸载（scope=${SCOPE}）："; for a in $AGENTS_LIST; do uninstall_agent "$a"; done ;;
     install)
-        echo "部署 rtl2gds-agent-kit（scope=${SCOPE}, mode=${MODE}）"
+        echo "部署 gpu-rtl2gds-agent-kit（scope=${SCOPE}, mode=${MODE}）"
         echo "  agent: $AGENTS_LIST"
         [ "$SCOPE" = "project" ] && echo "  目标: $TARGET"
         for a in $AGENTS_LIST; do

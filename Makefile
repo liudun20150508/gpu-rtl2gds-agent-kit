@@ -1,4 +1,4 @@
-# rtl2gds-agent-kit — 统一入口
+# gpu-rtl2gds-agent-kit — 统一入口
 #
 # make install                    # 自动探测已安装的 agent 并部署知识库
 # make install AGENT=claude-code  # 只部署到指定 agent
@@ -14,7 +14,7 @@ SCOPE ?= project
 .PHONY: help install uninstall doctor deps deps-install fixes fixes-list demo test clean
 
 help:
-	@echo "rtl2gds-agent-kit"
+	@echo "gpu-rtl2gds-agent-kit"
 	@echo ""
 	@echo "  make install [AGENT=<name>] [SCOPE=project|global]  部署知识库到 agent"
 	@echo "  make uninstall [SCOPE=...]                          卸载"

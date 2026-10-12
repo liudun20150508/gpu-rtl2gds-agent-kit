@@ -1,4 +1,4 @@
-# AGENTS.md — rtl2gds-agent-kit
+# AGENTS.md — gpu-rtl2gds-agent-kit
 
 本文件是**跨 agent 通用入口**（Codex、Reasonix、OpenClaw 均会读取根目录 `AGENTS.md`；
 Claude Code 读取 `CLAUDE.md`，见 `adapters/claude-code/README.md`）。

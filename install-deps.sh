@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================
-# rtl2gds-agent-kit · 开源 EDA 工具链安装脚本
+# gpu-rtl2gds-agent-kit · 开源 EDA 工具链安装脚本
 #
 # 注意分工：这个脚本装的是**跑流程要用的工具**；
 #           部署 agent 层（skills / AGENTS.md）请用 ./install.sh

@@ -19,7 +19,7 @@ Reasonix 按优先级发现技能：**项目目录 > `[skills].paths` 自定义 
 
 ```toml
 [skills]
-paths = ["/absolute/path/to/rtl2gds-agent-kit/skills"]
+paths = ["/absolute/path/to/gpu-rtl2gds-agent-kit/skills"]
 ```
 
 好处：技能与仓库同生命周期，`git pull` 即更新，无需重新部署。
@@ -32,7 +32,7 @@ Reasonix 会加载 `REASONIX.md` / `AGENTS.md` / `CLAUDE.md`。
 
 ```markdown
 ## 后端流程
-见 rtl2gds-agent-kit（路径：/absolute/path/to/rtl2gds-agent-kit）。
+见 gpu-rtl2gds-agent-kit（路径：/absolute/path/to/gpu-rtl2gds-agent-kit）。
 ```
 
 ## 与规则引擎配合
@@ -40,7 +40,7 @@ Reasonix 会加载 `REASONIX.md` / `AGENTS.md` / `CLAUDE.md`。
 Reasonix 可直接调用引擎（无需网络）：
 
 ```bash
-cd /path/to/rtl2gds-agent-kit && make demo        # 规则引擎跑示例报告
+cd /path/to/gpu-rtl2gds-agent-kit && make demo        # 规则引擎跑示例报告
 python3 -m engine pitfalls --text "STA-1670"      # 坑库检索
 ```
 
