@@ -1,5 +1,6 @@
 # gpu-rtl2gds-agent-kit — 统一入口
 #
+# ./deploy.sh                     # 一键部署（工具链 → 示例设计 → agent 层）
 # make install                    # 自动探测已安装的 agent 并部署知识库
 # make install AGENT=claude-code  # 只部署到指定 agent
 # make doctor                     # 检查环境与部署状态
@@ -10,12 +11,16 @@ SHELL := /bin/bash
 PY    ?= python3
 AGENT ?=
 SCOPE ?= project
+YES   ?=
 
-.PHONY: help install uninstall doctor deps deps-install fixes fixes-list fetch fetch-list fetch-all demo test clean
+.PHONY: help deploy deploy-check install uninstall doctor deps deps-install fixes fixes-list fetch fetch-list fetch-all demo test clean
 
 help:
 	@echo "gpu-rtl2gds-agent-kit"
 	@echo ""
+	@echo "  ./deploy.sh                                         一键部署（工具链 → 设计 → agent 层）"
+	@echo "  make deploy [YES=1]                                 同上，转调 ./deploy.sh"
+	@echo "  make deploy-check                                   只自检，不安装"
 	@echo "  make install [AGENT=<name>] [SCOPE=project|global]  部署知识库到 agent"
 	@echo "  make uninstall [SCOPE=...]                          卸载"
 	@echo "  make doctor                                         环境自检"
@@ -31,6 +36,12 @@ help:
 	@echo ""
 	@echo "  AGENT ∈ {auto, claude-code, reasonix, codex, openclaw, all}"
 	@echo "  未指定 AGENT 时等价于 auto（自动探测）。"
+
+deploy:
+	./deploy.sh $(if $(YES),--yes,) $(if $(AGENT),--agent $(AGENT),)
+
+deploy-check:
+	./deploy.sh --check
 
 install:
 	./install.sh $(if $(AGENT),--agent $(AGENT),--agent auto) --scope $(SCOPE)

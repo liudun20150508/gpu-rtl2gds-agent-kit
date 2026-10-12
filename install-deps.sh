@@ -2,8 +2,10 @@
 # =============================================================
 # gpu-rtl2gds-agent-kit · 开源 EDA 工具链安装脚本
 #
-# 注意分工：这个脚本装的是**跑流程要用的工具**；
-#           部署 agent 层（skills / AGENTS.md）请用 ./install.sh
+# 分工：本脚本只装**跑流程要用的工具**。
+#   部署 agent 层（skills / AGENTS.md） → ./install.sh
+#   下载第三方设计（vortex / picorv32） → ./designs/fetch.sh
+#   一键串起三步                       → ./deploy.sh
 #
 # 工具分三档，按需装：
 #   core    python3 + PyYAML（规则引擎必需）、iverilog（仿真 → 波形）
@@ -15,7 +17,7 @@
 #   ./install-deps.sh --install      按平台安装缺失的工具
 #   ./install-deps.sh --dry-run      只打印将执行的命令，不动系统
 #   ./install-deps.sh --tier core    只处理 core 档
-#   ./install-deps.sh --with-orfs    额外克隆并编译 OpenROAD-flow-scripts（1–3 小时）
+#   ./install-deps.sh --with-orfs    额外克隆 OpenROAD-flow-scripts（编译命令见文末）
 #
 # 说明：知识库与规则引擎（engine/）只依赖 core 档；装不上 EDA 工具也不影响使用。
 # =============================================================
@@ -33,7 +35,7 @@ while [ $# -gt 0 ]; do
         --dry-run)    DRY=1; MODE="install" ;;
         --with-orfs)  WITH_ORFS=1 ;;
         --tier)       shift; TIER="${1:-all}" ;;
-        -h|--help)    sed -n '2,25p' "$0"; exit 0 ;;
+        -h|--help)    sed -n '2,23p' "$0"; exit 0 ;;
         *) echo "未知参数: $1（用 --help）" >&2; exit 2 ;;
     esac
     shift
@@ -60,15 +62,17 @@ detect_platform() {
 }
 PLATFORM="$(detect_platform)"
 
-# ---------- 工具表：名字|档位|用途|平台包名(逗号分隔，空=无官方包)|验证命令 ----------
+# ---------- 工具表：名字 档位 用途 平台包名 验证命令 ----------
+# 包名里的 @cask: 前缀 = Homebrew cask（不是 formula），展开成 `--cask <名>`
+# 空包名（-）= 发行版里没有，见文末「照着敲」的命令
 # 用普通函数代替关联数组，兼容 macOS 自带的 bash 3.2
 TOOLS="python3 core 规则引擎解释器 python3 python3
 iverilog core 仿真出VCD（波形） icarus-verilog iverilog
 verilator extra 更快的仿真 verilator verilator
 yosys signoff 逻辑综合 yosys yosys
-klayout signoff DRC/LVS/版图渲染 klayout klayout
+klayout signoff DRC/LVS/版图渲染 @cask:klayout klayout
 openroad signoff APR/STA/IREM - openroad
-gtkwave extra 波形GUI查看器 gtkwave gtkwave"
+gtkwave extra 波形GUI查看器 @cask:gtkwave gtkwave"
 
 pkg_of() {  # $1=tool  $2=档位内的包名（macos 用主名，debian/rhel 见下）
     local tool="$1" mac="$2"
@@ -80,7 +84,7 @@ pkg_of() {  # $1=tool  $2=档位内的包名（macos 用主名，debian/rhel 见
                 iverilog) echo "iverilog" ;;
                 verilator) echo "verilator" ;;
                 yosys)    echo "yosys" ;;
-                klayout)  echo "" ;;      # Ubuntu 官方源无 klayout，需 PPA 或 .deb
+                klayout)  echo "" ;;      # Ubuntu 官方源无 klayout，用 flatpak 或官网 .deb
                 openroad) echo "" ;;      # 无发行版包
                 gtkwave)  echo "gtkwave" ;;
                 *)        echo "" ;;
@@ -108,6 +112,31 @@ installer_cmd() {
     esac
 }
 
+expand_pkgs() {  # @cask:klayout -> --cask klayout（其余原样）
+    local out="" p
+    for p in $1; do
+        case "$p" in
+            @cask:*) out="$out --cask ${p#@cask:}" ;;
+            *)       out="$out $p" ;;
+        esac
+    done
+    echo "${out# }"
+}
+
+manual_hint() {  # 无发行版包的工具 → 一行可执行提示
+    local tool="$1"
+    case "$PLATFORM:$tool" in
+        *:openroad)
+            echo "装不上包 → ./install-deps.sh --with-orfs 自建，或 Docker openroad/orfs（见文末①）" ;;
+        debian:klayout|rhel:klayout|linux-other:klayout)
+            echo "flatpak install flathub de.klayout.klayout（或官网 .deb，见文末②）" ;;
+        macos:klayout)
+            echo "brew install --cask klayout" ;;
+        *)
+            echo "无发行版包，需手动安装（见文末）" ;;
+    esac
+}
+
 want_tier() {  # $1=工具档位，判断当前 TIER 是否包含它
     case "$TIER" in
         all) return 0 ;;
@@ -123,23 +152,20 @@ has() { command -v "$1" >/dev/null 2>&1; }
 echo "平台: $PLATFORM"
 echo "档位: $TIER   模式: $MODE$([ "$DRY" = 1 ] && echo '（dry-run）')"
 echo "----------------------------------------------------------------------"
-printf '%-12s %-8s %-28s %s\n' "工具" "档位" "用途" "状态"
+printf '%-12s %-8s %-26s %s\n' "工具" "档位" "用途" "状态"
 echo "----------------------------------------------------------------------"
-
-MISSING=""
-MAYBE_MANUAL=""
 
 echo "$TOOLS" | while read -r tool tier use mac_pkg verify; do
     [ -n "${tool:-}" ] || continue
     want_tier "$tier" || continue
     if has "$verify"; then
-        printf '%-12s %-8s %-28s %s\n' "$tool" "$tier" "$use" "✓ 已装"
+        printf '%-12s %-8s %-26s %s\n' "$tool" "$tier" "$use" "✓ 已装"
     else
         pkg="$(pkg_of "$tool" "$mac_pkg")"
         if [ -n "$pkg" ]; then
-            printf '%-12s %-8s %-28s %s\n' "$tool" "$tier" "$use" "✗ 缺失 → $(installer_cmd) $pkg"
+            printf '%-12s %-8s %-26s %s\n' "$tool" "$tier" "$use" "✗ 缺失 → $(installer_cmd) $(expand_pkgs "$pkg")"
         else
-            printf '%-12s %-8s %-28s %s\n' "$tool" "$tier" "$use" "✗ 缺失 → 无发行版包，需手动安装"
+            printf '%-12s %-8s %-26s %s\n' "$tool" "$tier" "$use" "✗ 缺失 → $(manual_hint "$tool")"
         fi
     fi
 done
@@ -174,12 +200,12 @@ if [ "$MODE" = "install" ]; then
     echo "----------------------------------------------------------------------"
     cmd="$(installer_cmd)"
     if [ -n "$needs_install" ] && [ -n "$cmd" ]; then
-        echo "将执行: $cmd $needs_install"
+        echo "将执行: $cmd $(expand_pkgs "$needs_install")"
         if [ "$DRY" = 1 ]; then
             echo "（dry-run，未执行）"
         else
             # shellcheck disable=SC2086
-            $cmd $needs_install
+            $cmd $(expand_pkgs "$needs_install")
         fi
     elif [ -z "$needs_install" ]; then
         echo "发行版包已齐，无需安装。"
@@ -196,26 +222,44 @@ if [ "$MODE" = "install" ]; then
     fi
 fi
 
-# ---------- 手动安装指引（无发行版包的工具） ----------
+# ---------- 无发行版包的工具：照着敲这些命令 ----------
 cat <<'TIP'
 ----------------------------------------------------------------------
-无发行版包的工具怎么装：
+① openroad（APR/STA/IREM）—— 发行版里没有，三选一
 
-  openroad（APR/STA）
-    macOS : 用 OpenROAD-flow-scripts 自建（见下）
-    Linux : 同上，或用官方预编译包 / Docker 镜像 openroad/orfs
-    自建  : ./install-deps.sh --with-orfs
+   自建（推荐：与 flow/ 的脚本、env.tcl 完全对齐，编译约 1–3 小时）
+       ./install-deps.sh --with-orfs                    # 本脚本负责克隆
+       cd ~/tools/OpenROAD-flow-scripts
+       ./setup.sh && ./build_openroad.sh --local        # 编译（建议 nohup 后台）
+       export ORFS_ROOT=~/tools/OpenROAD-flow-scripts/flow
 
-  klayout（DRC/LVS/版图）
-    macOS : brew install --cask klayout
-    Ubuntu: 官方源无包，用 KLayout 官网 .deb 或 flatpak
+   Docker（不想装编译环境）
+       docker pull openroad/orfs:latest
+       docker run -it --rm -v "$PWD:/work" openroad/orfs:latest
 
-  PyYAML 装不上时：引擎对 YAML 的读取是唯一硬依赖，
-  没它 engine/ 与 make demo 无法运行，必须先解决。
+   Ubuntu 预编译包（版本号以 release 页为准）
+       # 从 https://github.com/The-OpenROAD-Project/OpenROAD/releases 取对应 Ubuntu 版本的 .deb
+       sudo apt install ./openroad_<版本>_amd64-ubuntu<22.04|24.04>.deb
+
+② klayout（DRC/LVS/版图渲染）
+
+   macOS : brew install --cask klayout          # 注意是 cask，不是 formula
+   Ubuntu: flatpak install flathub de.klayout.klayout
+           或从官网下载 .deb：https://www.klayout.de/build.html
+   RHEL  : flatpak install flathub de.klayout.klayout
+
+③ 装完统一自检
+
+   ./install-deps.sh --check        # 工具是否齐
+   ./install.sh --doctor            # agent 层是否就位
+   make demo                        # 规则引擎是否可用
+
+PyYAML 装不上时：引擎对 YAML 的读取是唯一硬依赖，
+没它 engine/ 与 make demo 无法运行，必须先解决。
 ----------------------------------------------------------------------
 TIP
 
-# ---------- OpenROAD-flow-scripts（可选，耗时长） ----------
+# ---------- OpenROAD-flow-scripts 克隆（可选，编译交给你决定） ----------
 if [ "$WITH_ORFS" = 1 ]; then
     echo "== OpenROAD-flow-scripts =="
     target="${ORFS_ROOT:-$HOME/tools/OpenROAD-flow-scripts}"

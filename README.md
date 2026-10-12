@@ -78,23 +78,47 @@ gpu-rtl2gds-agent-kit/
 
 ---
 
-## 3. 快速开始（3 步）
+## 3. 快速开始
+
+### 一条命令
 
 ```bash
 git clone <this-repo> gpu-rtl2gds-agent-kit
 cd gpu-rtl2gds-agent-kit
-
-make doctor     # ① 环境自检：agent 探测 + 依赖检查 + 部署状态
-make test       # ② 验证规则引擎可用（14 个用例）
-make install    # ③ 部署知识库到你机器上已安装的 agent
+./deploy.sh
 ```
 
-`make install` 会自动探测本机装了哪些 agent 并分发；也可以精确指定：
+`deploy.sh` 把下面三步串成一条链，每步都带自检，失败会停下并告诉你单独重跑的命令：
+
+| 步骤 | 脚本 | 做什么 |
+| --- | --- | --- |
+| ① 工具链 | `install-deps.sh` | 装开源 EDA 工具（python3/PyYAML、iverilog、yosys、klayout、openroad…） |
+| ② 示例设计 | `designs/fetch.sh` | 取第三方设计（vortex / picorv32；默认只自检，加 `--with-designs` 才下载） |
+| ③ agent 层 | `install.sh` | 把 `skills/` + `AGENTS.md` 部署到 Claude Code / Reasonix / Codex / OpenClaw |
 
 ```bash
-make install AGENT=claude-code            # 只部署给 Claude Code
-make install AGENT=all SCOPE=global       # 部署到四家的全局目录
-make uninstall
+./deploy.sh --check          # 只自检，什么都不装
+./deploy.sh --dry-run        # 打印将执行的命令，不动系统
+./deploy.sh --only agent     # 只跑某一步（deps | designs | agent）
+./deploy.sh --yes            # 全程不提问（CI 用）
+```
+
+### 分步做也行
+
+```bash
+./install-deps.sh --check        # ① 工具链：先看缺什么（--install 才真装）
+./designs/fetch.sh --check       # ② 设计：vortex / picorv32 下载状态（--fetch all 才下）
+./install.sh --agent auto        # ③ 部署：自动探测本机装了哪些 agent
+make doctor                      # 环境自检：agent 探测 + 依赖检查 + 部署状态
+make test                        # 验证规则引擎可用（14 个用例）
+```
+
+`install.sh` 也可以精确指定：
+
+```bash
+./install.sh --agent claude-code            # 只部署给 Claude Code
+./install.sh --agent all --scope global     # 部署到四家的全局目录
+./install.sh --uninstall                    # 卸载
 ```
 
 **不需要 EDA 工具也能验证仓库可用**：`make demo` 用内置示例报告跑一次完整诊断。

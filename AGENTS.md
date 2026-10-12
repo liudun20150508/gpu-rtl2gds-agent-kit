@@ -64,6 +64,7 @@ Claude Code 读取 `CLAUDE.md`，见 `adapters/claude-code/README.md`）。
 ## 常用命令
 
 ```bash
+./deploy.sh             # 一键部署：工具链 → 示例设计 → agent 层（内部调下面这些脚本）
 make install            # 部署知识库到已探测到的 agent
 make doctor             # 环境与部署自检
 make fetch              # 第三方设计自检（vortex / picorv32 是否已下载、PDK 是否就绪）
