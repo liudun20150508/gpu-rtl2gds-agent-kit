@@ -1,5 +1,7 @@
 # gpu-rtl2gds-agent-kit
 
+**面向 GPU 与 AI 加速器芯片的开源数字后端（RTL → GDS）知识库 —— 一键部署给 AI coding agent。**
+
 > **把数字后端（RTL2GDS）的工程经验，做成 AI agent 可以直接用的知识库。**
 >
 > 一套可部署的**后端知识库 + 规则引擎 + 流程/TCL 脚本**，适配 Claude Code / Reasonix /
