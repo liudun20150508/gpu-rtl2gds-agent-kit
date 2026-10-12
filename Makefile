@@ -11,7 +11,7 @@ PY    ?= python3
 AGENT ?=
 SCOPE ?= project
 
-.PHONY: help install uninstall doctor demo test clean
+.PHONY: help install uninstall doctor deps deps-install demo test clean
 
 help:
 	@echo "rtl2gds-agent-kit"
@@ -19,6 +19,8 @@ help:
 	@echo "  make install [AGENT=<name>] [SCOPE=project|global]  部署知识库到 agent"
 	@echo "  make uninstall [SCOPE=...]                          卸载"
 	@echo "  make doctor                                         环境自检"
+	@echo "  make deps                                           检查 EDA 工具链依赖"
+	@echo "  make deps-install                                   安装缺失的依赖"
 	@echo "  make demo                                           规则引擎示例"
 	@echo "  make test                                           引擎单元测试"
 	@echo ""
@@ -33,6 +35,12 @@ uninstall:
 
 doctor:
 	./install.sh --doctor
+
+deps:
+	./install-deps.sh --check
+
+deps-install:
+	./install-deps.sh --install
 
 demo:
 	$(PY) -m engine analyze --stage TIMING --report examples/reports/sta_wns_fail.rpt --no-llm

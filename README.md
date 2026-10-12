@@ -394,8 +394,25 @@ python3 -m engine optimize --stage TIMING --run "make sta" --reports wns.rpt \
 
 ## 13. 依赖与许可
 
-- **必需**：`python3` ≥ 3.8、`PyYAML`（`pip install pyyaml`）
-- **跑流程**：Yosys、OpenROAD、OpenSTA、KLayout（本机未装也不影响知识库与规则引擎使用）
+**一键检查 / 安装依赖** —— 知识库与规则引擎只需要 core 档：
+
+```bash
+./install-deps.sh --check      # 只检查缺什么，不动系统
+./install-deps.sh --install    # 按平台安装（macOS/Homebrew、Debian/Ubuntu、RHEL）
+./install-deps.sh --dry-run    # 只打印将执行的命令
+./install-deps.sh --with-orfs  # 额外克隆并编译 OpenROAD-flow-scripts（1–3 小时）
+```
+
+| 档 | 工具 | 用途 |
+|----|------|------|
+| **core** | `python3` + `PyYAML`、`iverilog` | 规则引擎、仿真出波形图 —— **只用知识库/引擎的话装这些就够** |
+| **signoff** | `yosys`、`klayout`、`openroad` | 综合、DRC/LVS/版图渲染、APR/STA/IREM |
+| **extra** | `verilator`、`gtkwave` | 更快的仿真、波形 GUI（可选） |
+
+`klayout` 与 `openroad` 在多数发行版没有官方包，脚本会打印手动安装方式
+（Homebrew cask / 官方 .deb / 源码编译 / Docker 镜像 `openroad/orfs`）。
+**装不上 EDA 工具也不影响知识库与规则引擎的使用** —— 那部分是这个仓库的本体。
+
 - **许可**：[Apache-2.0](LICENSE)
 
 ---
