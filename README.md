@@ -58,9 +58,16 @@ rtl2gds-agent-kit/
 │   ├── 01_prep_sources.sh … 03_sta.sh
 │   ├── openroad/          #    9 个阶段 TCL（floorplan→route→签核）
 │   ├── dft/               #    综合→扫描插入→ATPG→模式验证
+│   ├── plot_timing.py     #    时序指标 CSV → 时序 SVG（零依赖）
+│   ├── plot_waveform.py   #    VCD → 波形 SVG（零依赖）
+│   ├── render_gds.py / make_floorplan_gds.py / make_cell_layout.py
+│   │                      #    GDS/DEF/LEF → 版图视图
+│   ├── make_schematic.py  #    门级网表 → 逻辑设计图/原理图
 │   └── fixes/             #    修复模板（SPEF 负索引等）
 │
 ├── adapters/              # ⑤ 各 agent 的接法文档
+├── examples/              # ⑥ 示例数据（时序 CSV、扫描链 testbench 与 VCD）
+├── docs/                  # ⑦ 架构文档 + figures/（版图·原理图·时序·波形 四类图）
 └── tests/                 # 引擎单元测试（14 个用例）
 ```
 
@@ -174,6 +181,10 @@ bash   flow/env.sh --check  # 自检：打印解析结果并校验路径
 辅助：`env.tcl`（Tcl 侧环境，读 `$::env(...)` 不写死路径）、
 `inst_bind.tcl`（由引擎生成的实例级约束）、`lvs.tcl`、`run_all.sh`。
 
+画图脚本：`plot_timing.py`（时序指标 → 时序 SVG）、`plot_waveform.py`（VCD → 波形 SVG）、
+`render_gds.py` / `make_floorplan_gds.py` / `make_cell_layout.py`（版图）、
+`make_schematic.py`（逻辑设计图）—— 见本章末「画图脚本」小节。
+
 ### 跑流程前必须知道的四件事
 
 1. **重跑前删日志**：make 以日志存在判断 stage 完成，失败也留日志 → 假跳过；
@@ -184,6 +195,44 @@ bash   flow/env.sh --check  # 自检：打印解析结果并校验路径
 完整 10 条坑见 [`rules/pitfalls.yaml`](rules/pitfalls.yaml)。
 
 ---
+
+### 画图脚本：版图 / 逻辑设计图 / 时序 / 波形
+
+后端交付物不只有文本报告——图是签核与复盘的证据。本仓库自带画图脚本，其中时序与波形两个是**零第三方依赖**的纯 Python 实现，直接产出 SVG（浏览器和 GitHub 都能看，不需要 gtkwave / matplotlib）：
+
+| 脚本 | 输入 | 输出 |
+| --- | --- | --- |
+| `flow/plot_timing.py` | 时序指标 CSV（`name,wns_ns,tns_ns,freq_mhz,gates,violations`） | 时序图 SVG：WNS 裕量条形图（带 0 基线，负值自动标红）+ 门数规模条形图 |
+| `flow/plot_waveform.py` | 仿真 VCD | 波形图 SVG：单 bit 阶梯波形（0/1 蓝线，x/z 灰线）、多 bit 总线十六进制取值、时间网格刻度 |
+| `flow/render_gds.py`、`flow/make_floorplan_gds.py`、`flow/make_cell_layout.py` | GDS / DEF / LEF | 版图视图（全芯片、floorplan、单元级） |
+| `flow/make_schematic.py` | 门级网表 | 逻辑设计图 / 原理图 |
+
+> 版图与原理图脚本依赖具体 EDA 工具（KLayout 等），依赖与参数见各脚本头部注释。
+
+**示例产物**（本仓库已生成，可直接点开看）：
+
+- **版图**：[全芯片版图](docs/figures/layout/chip_full.png) · [版图总览](docs/figures/layout/chip_layout.png) · [标准单元版图](docs/figures/layout/sky130_cells_layout.png) · [单元 CMOS 截面](docs/figures/layout/cell_nand2_cmos.png)
+- **逻辑设计图**：[门级原理图](docs/figures/schematic/gates_schematic.png) · [ALU 门级](docs/figures/schematic/alu_gates_rtl.png) · [仲裁器原理图](docs/figures/schematic/rr_arbiter.png)
+- **时序**：[三方案时序裕量与规模对比](docs/figures/timing/three_variants.svg)
+- **波形**：[扫描链移位与捕获时序](docs/figures/waveform/scan_shift.svg)
+
+**一键复现时序与波形图**（波形走真实仿真，不是画出来的示意图）：
+
+```bash
+# 时序图：CSV → SVG
+python3 flow/plot_timing.py examples/timing/three_variants.csv \
+    -o docs/figures/timing/three_variants.svg --title "三方案时序裕量与规模对比"
+
+# 波形图：iverilog 仿真 → VCD → SVG
+cd examples/waveforms
+iverilog -o /tmp/scan_chain.vvp scan_chain_tb.v && vvp /tmp/scan_chain.vvp
+python3 ../../flow/plot_waveform.py scan_shift.vcd -o scan_shift.svg \
+    --title "扫描链移位与捕获时序" --signals clk,scan_en,scan_in,scan_out,d,q
+```
+
+`examples/waveforms/scan_chain_tb.v` 是一个最小 4 位扫描链：`scan_en=0` 并行捕获、`scan_en=1` 移位串出，波形里能直接看到链尾依次移出 `A→5→B→6→C→8→0→A`。换成自己的设计时，替换 RTL 与 testbench 并保留 `$dumpvars` 即可。
+
+> 这些版图/原理图示例取自开源工艺 SKY130 上的实际实现，用于说明**产物格式与判读方式**；换到商业工艺时图的类型与看点不变，只是换成 Virtuoso / ICC2 / Innovus 的对应视图。
 
 ## 7. 签核链：六项，各自的判据
 

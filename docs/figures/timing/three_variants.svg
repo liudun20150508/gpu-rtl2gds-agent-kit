@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="560" viewBox="0 0 1160 560" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+<rect width="1160" height="560" fill="#fbfbfd"/>
+<text x="24" y="34" font-size="18" font-weight="700" fill="#111">三方案时序裕量与规模对比（SKY130 @50MHz）</text>
+<text x="190" y="74" font-size="15" font-weight="600" fill="#111">时序裕量 WNS（ns，越正越好；&amp;lt;0 为违规）</text>
+<line x1="190.0" y1="94" x2="190.0" y2="254" stroke="#999" stroke-width="1.5"/>
+<text x="176" y="121.0" font-size="12" fill="#222" text-anchor="end">baseline</text>
+<rect x="190.0" y="105.0" width="325.0" height="24" fill="#2f7d32" rx="2"/>
+<text x="523.0" y="121.0" font-size="12" fill="#333" text-anchor="start">1.13 ns</text>
+<line x1="190" y1="142.0" x2="1070" y2="142.0" stroke="#eee" stroke-width="1"/>
+<text x="176" y="171.0" font-size="12" fill="#222" text-anchor="end">+vortex_llm</text>
+<rect x="190.0" y="155.0" width="658.6" height="24" fill="#2f7d32" rx="2"/>
+<text x="856.6" y="171.0" font-size="12" fill="#333" text-anchor="start">2.29 ns</text>
+<line x1="190" y1="192.0" x2="1070" y2="192.0" stroke="#eee" stroke-width="1"/>
+<text x="176" y="221.0" font-size="12" fill="#222" text-anchor="end">+vortex_llm_ai</text>
+<rect x="190.0" y="205.0" width="880.0" height="24" fill="#2f7d32" rx="2"/>
+<text x="1078.0" y="221.0" font-size="12" fill="#333" text-anchor="start">3.06 ns</text>
+<line x1="190" y1="242.0" x2="1070" y2="242.0" stroke="#eee" stroke-width="1"/>
+<text x="190" y="274" font-size="15" font-weight="600" fill="#111">规模：标准单元/门数</text>
+<line x1="190.0" y1="294" x2="190.0" y2="454" stroke="#999" stroke-width="1.5"/>
+<text x="176" y="321.0" font-size="12" fill="#222" text-anchor="end">baseline</text>
+<rect x="190.0" y="305.0" width="786.8" height="24" fill="#7a5af8" rx="2"/>
+<text x="984.8" y="321.0" font-size="12" fill="#333" text-anchor="start">281881</text>
+<line x1="190" y1="342.0" x2="1070" y2="342.0" stroke="#eee" stroke-width="1"/>
+<text x="176" y="371.0" font-size="12" fill="#222" text-anchor="end">+vortex_llm</text>
+<text x="198.0" y="371.0" font-size="11" fill="#999">n/a</text>
+<line x1="190" y1="392.0" x2="1070" y2="392.0" stroke="#eee" stroke-width="1"/>
+<text x="176" y="421.0" font-size="12" fill="#222" text-anchor="end">+vortex_llm_ai</text>
+<rect x="190.0" y="405.0" width="880.0" height="24" fill="#7a5af8" rx="2"/>
+<text x="1078.0" y="421.0" font-size="12" fill="#333" text-anchor="start">315271</text>
+<line x1="190" y1="442.0" x2="1070" y2="442.0" stroke="#eee" stroke-width="1"/>
+<text x="24" y="542" font-size="11" fill="#999">由 flow/plot_timing.py 生成 · 数据源 CSV</text>
+</svg>

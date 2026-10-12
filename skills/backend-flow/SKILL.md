@@ -126,7 +126,23 @@ gmake DESIGN_CONFIG=./designs/sky130hd/vortex_llm/config.mk \
 > 开源工具缺 `set_instance_region` / `set_shielded_net` 这类商业专有命令时，
 > 用 `group_path`（SDC 层）+ PDN 加倍**语义等价替代**，并在报告中如实标注替代关系。
 
-## 6. 本技能不覆盖什么
+## 6. 可视化产物（版图 / 原理图 / 时序 / 波形）
+
+签核结论要用图佐证。配套脚本（详见 README 第 6 节）：
+
+- `flow/plot_timing.py`：时序指标 CSV → 时序 SVG（WNS 条形图 + 门数规模）
+- `flow/plot_waveform.py`：VCD → 波形 SVG（单 bit 阶梯 + 多 bit 总线）
+- `flow/render_gds.py`、`make_floorplan_gds.py`、`make_cell_layout.py`、`make_schematic.py`：GDS/DEF/LEF/网表 → 版图与原理图
+
+判读要点：
+
+- **版图**：先看利用率与宏单元摆放是否合理，再看 DRC 标记位置，最后看电源网格密度是否均匀
+- **时序图**：先看 WNS 正负，再看各配置/各轮迭代之间的余量趋势是否单调收敛
+- **波形图**：确认 `scan_en` 切换时刻落在时钟边沿之间的安全窗口、链尾输出顺序正确、没有多移或少移一拍
+
+示例产物在 `docs/figures/`（layout / schematic / timing / waveform 四类）。
+
+## 7. 本技能不覆盖什么
 
 - 多 corner/MMMC、OCV/AOCV/POCV、SI 签核 —— 开源单 corner 流程不产出这些；
 - 动态 IR/EM（需 VCD/FSDP 向量）；

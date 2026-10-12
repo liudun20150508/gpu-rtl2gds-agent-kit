@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="286" viewBox="0 0 1280 286" font-family="Menlo,Consolas,monospace">
+<rect width="1280" height="286" fill="#fbfbfd"/>
+<text x="190" y="26" font-size="16" font-weight="600" fill="#111">扫描链移位与捕获时序（100MHz）</text>
+<text x="190" y="43" font-size="11" fill="#777">timescale 1ns · 0 – 100000</text>
+<line x1="190.0" y1="44" x2="190.0" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="190.0" y="270" font-size="10" fill="#888" text-anchor="middle">0</text>
+<line x1="296.6" y1="44" x2="296.6" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="296.6" y="270" font-size="10" fill="#888" text-anchor="middle">10000</text>
+<line x1="403.2" y1="44" x2="403.2" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="403.2" y="270" font-size="10" fill="#888" text-anchor="middle">20000</text>
+<line x1="509.8" y1="44" x2="509.8" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="509.8" y="270" font-size="10" fill="#888" text-anchor="middle">30000</text>
+<line x1="616.4" y1="44" x2="616.4" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="616.4" y="270" font-size="10" fill="#888" text-anchor="middle">40000</text>
+<line x1="723.0" y1="44" x2="723.0" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="723.0" y="270" font-size="10" fill="#888" text-anchor="middle">50000</text>
+<line x1="829.6" y1="44" x2="829.6" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="829.6" y="270" font-size="10" fill="#888" text-anchor="middle">60000</text>
+<line x1="936.2" y1="44" x2="936.2" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="936.2" y="270" font-size="10" fill="#888" text-anchor="middle">70000</text>
+<line x1="1042.8" y1="44" x2="1042.8" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="1042.8" y="270" font-size="10" fill="#888" text-anchor="middle">80000</text>
+<line x1="1149.4" y1="44" x2="1149.4" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="1149.4" y="270" font-size="10" fill="#888" text-anchor="middle">90000</text>
+<line x1="1256.0" y1="44" x2="1256.0" y2="252" stroke="#e6e6ee" stroke-width="1"/>
+<text x="1256.0" y="270" font-size="10" fill="#888" text-anchor="middle">100000</text>
+<rect x="0" y="44" width="190" height="208" fill="#f2f2f7"/>
+<text x="178" y="71.0" font-size="12" fill="#222" text-anchor="end">scan_out</text>
+<line x1="0" y1="82.0" x2="1256" y2="82.0" stroke="#e0e0e8" stroke-width="1"/>
+<line x1="190.0" y1="67.0" x2="243.3" y2="67.0" stroke="#bbb" stroke-width="2"/>
+<polyline points="243.3,67.0 243.3,67.0 243.3,60.0 349.9,60.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="349.9,60.0 349.9,60.0 349.9,72.0 456.5,72.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="456.5,72.0 456.5,72.0 456.5,60.0 563.1,60.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="563.1,60.0 563.1,60.0 563.1,72.0 669.7,72.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="669.7,72.0 669.7,72.0 669.7,60.0 882.9,60.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="882.9,60.0 882.9,60.0 882.9,72.0 1202.7,72.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="1202.7,72.0 1202.7,72.0 1202.7,60.0 1256.0,60.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<text x="178" y="101.0" font-size="12" fill="#222" text-anchor="end">clk</text>
+<line x1="0" y1="112.0" x2="1256" y2="112.0" stroke="#e0e0e8" stroke-width="1"/>
+<line x1="190.0" y1="102.0" x2="243.3" y2="102.0" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="243.3,102.0 243.3,102.0 243.3,90.0 296.6,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="296.6,90.0 296.6,90.0 296.6,102.0 349.9,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="349.9,102.0 349.9,102.0 349.9,90.0 403.2,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="403.2,90.0 403.2,90.0 403.2,102.0 456.5,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="456.5,102.0 456.5,102.0 456.5,90.0 509.8,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="509.8,90.0 509.8,90.0 509.8,102.0 563.1,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="563.1,102.0 563.1,102.0 563.1,90.0 616.4,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="616.4,90.0 616.4,90.0 616.4,102.0 669.7,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="669.7,102.0 669.7,102.0 669.7,90.0 723.0,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="723.0,90.0 723.0,90.0 723.0,102.0 776.3,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="776.3,102.0 776.3,102.0 776.3,90.0 829.6,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="829.6,90.0 829.6,90.0 829.6,102.0 882.9,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="882.9,102.0 882.9,102.0 882.9,90.0 936.2,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="936.2,90.0 936.2,90.0 936.2,102.0 989.5,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="989.5,102.0 989.5,102.0 989.5,90.0 1042.8,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="1042.8,90.0 1042.8,90.0 1042.8,102.0 1096.1,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="1096.1,102.0 1096.1,102.0 1096.1,90.0 1149.4,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="1149.4,90.0 1149.4,90.0 1149.4,102.0 1202.7,102.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="1202.7,102.0 1202.7,102.0 1202.7,90.0 1256.0,90.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<text x="178" y="136.0" font-size="12" fill="#222" text-anchor="end">d <tspan fill="#999">[3:0]</tspan></text>
+<line x1="0" y1="152.0" x2="1256" y2="152.0" stroke="#e0e0e8" stroke-width="1"/>
+<rect x="190.0" y="118.0" width="1066.0" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="723.0" y="136.0" font-size="11" fill="#1f3d73" text-anchor="middle">A</text>
+<text x="178" y="171.0" font-size="12" fill="#222" text-anchor="end">scan_en</text>
+<line x1="0" y1="182.0" x2="1256" y2="182.0" stroke="#e0e0e8" stroke-width="1"/>
+<line x1="190.0" y1="172.0" x2="296.6" y2="172.0" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="296.6,172.0 296.6,172.0 296.6,160.0 1149.4,160.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="1149.4,160.0 1149.4,160.0 1149.4,172.0 1256.0,172.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<text x="178" y="201.0" font-size="12" fill="#222" text-anchor="end">scan_in</text>
+<line x1="0" y1="212.0" x2="1256" y2="212.0" stroke="#e0e0e8" stroke-width="1"/>
+<line x1="190.0" y1="202.0" x2="296.6" y2="202.0" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="296.6,202.0 296.6,202.0 296.6,190.0 509.8,190.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<polyline points="509.8,190.0 509.8,190.0 509.8,202.0 1256.0,202.0" fill="none" stroke="#1a6bd6" stroke-width="2"/>
+<text x="178" y="236.0" font-size="12" fill="#222" text-anchor="end">q <tspan fill="#999">[3:0]</tspan></text>
+<line x1="0" y1="252.0" x2="1256" y2="252.0" stroke="#e0e0e8" stroke-width="1"/>
+<rect x="190.0" y="218.0" width="53.3" height="26.0" fill="#f0f0f4" stroke="#5b7fc7" stroke-width="1"/>
+<text x="216.7" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">x</text>
+<rect x="243.3" y="218.0" width="106.6" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="296.6" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">A</text>
+<rect x="349.9" y="218.0" width="106.6" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="403.2" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">5</text>
+<rect x="456.5" y="218.0" width="106.6" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="509.8" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">B</text>
+<rect x="563.1" y="218.0" width="106.6" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="616.4" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">6</text>
+<rect x="669.7" y="218.0" width="106.6" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="723.0" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">C</text>
+<rect x="776.3" y="218.0" width="106.6" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="829.6" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">8</text>
+<rect x="882.9" y="218.0" width="319.8" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="1042.8" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">0</text>
+<rect x="1202.7" y="218.0" width="53.3" height="26.0" fill="#dbe8ff" stroke="#5b7fc7" stroke-width="1"/>
+<text x="1229.3" y="236.0" font-size="11" fill="#1f3d73" text-anchor="middle">A</text>
+</svg>

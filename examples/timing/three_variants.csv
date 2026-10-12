@@ -1,0 +1,4 @@
+name,wns_ns,tns_ns,freq_mhz,gates,violations,note
+baseline,1.13,0.0,50,281881,0,TCU 关闭
++vortex_llm,2.29,0.0,50,,0,TCU 打开
++vortex_llm_ai,3.06,0.0,50,315271,0,追加 AI 负载约束

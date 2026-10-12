@@ -86,6 +86,19 @@ analyze_em -net VDD -report_file signoff/em.rpt
 - 电源开关单元插入合法性（MoE 专家阵列下电场景）；
 - 该检查清单见 `flow/openroad/09_vclp.md`。
 
+## 图证据（签核包里的图）
+
+文本报告之外，随签核包一起交付的图：
+
+| 图 | 看什么 | 产出方式 |
+| --- | --- | --- |
+| 全芯片版图 + 关键区域放大 | DRC 是否干净、密度是否均匀、有无孤立标记 | `flow/render_gds.py` / KLayout |
+| 时序裕量对比图 | 多配置/多轮迭代的 WNS、TNS 趋势 | `flow/plot_timing.py`（零依赖，出 SVG） |
+| 仿真波形 | 扫描链移位/捕获、复位释放、时钟切换 | `flow/plot_waveform.py`（零依赖，VCD→SVG） |
+| 逻辑设计图 | 与网表一致（LEC 通过后可作对照） | `flow/make_schematic.py` |
+
+示例见 `docs/figures/{layout,schematic,timing,waveform}/`。注意：图要能对上报告里的数字（WNS、门数、违例数），对不上就是图与数据不同源。
+
 ## 交给晶圆厂前的交付物清单
 
 | 交付物 | 格式 | 用途 |

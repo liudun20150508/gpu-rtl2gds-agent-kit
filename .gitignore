@@ -37,6 +37,7 @@ build/
 !examples/**/*.log
 !examples/**/*.rpt
 !examples/**/*.v
+!examples/**/*.vcd
 
 # --- 商业 PDK（授权物，禁止分发）---
 pdk/
