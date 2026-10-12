@@ -234,6 +234,32 @@ python3 ../../flow/plot_waveform.py scan_shift.vcd -o scan_shift.svg \
 
 > 这些版图/原理图示例取自开源工艺 SKY130 上的实际实现，用于说明**产物格式与判读方式**；换到商业工艺时图的类型与看点不变，只是换成 Virtuoso / ICC2 / Innovus 的对应视图。
 
+### 修复脚本（`flow/fixes/`）
+
+流程挂掉时**能直接执行的修法**收在这里，不再只是文档里的一段说明。总入口：
+
+```bash
+make fixes                                        # 列出全部修复 + 环境自检
+make fixes-list                                   # 只列清单
+./flow/fixes/apply_fixes.sh --show  <id>          # 看某条的症状、根因、用法
+./flow/fixes/apply_fixes.sh --check <id> <参数>    # 只诊断，不改任何文件
+./flow/fixes/apply_fixes.sh --apply <id> <参数>    # 应用
+```
+
+| id | 修什么 | 触发症状 |
+|---|---|---|
+| `spef` | SPEF 负索引毒 token | STA `read_spef` 报 `[ERROR STA-1670] syntax error` |
+| `cdl` | CDL 实例行缺单元名 | LVS 读不进网表 / 器件数对不上 |
+| `conb` | conb tie cell 与版图提取不一致 | LVS 卡在 `sky130_fd_sc_hd__conb_*` |
+| `dfflib` | 生成 dffmap / patched 两份 lib | 综合报 `$_DFFE_PP_ cannot be legalized` |
+| `stack` | 抬高栈上限跑布线 | detail route Signal 11 / `boost::polygon::MaxCover` |
+
+每个 id 都与 `rules/pitfalls.yaml` 里的坑条目一一对应：**坑库负责「知道该怎么做」，脚本负责「不用每次手敲」**。
+agent 读到报错 → 匹配坑 → 直接调脚本改掉 → 重跑验证，中间不必回头问人。
+
+其中 `dfflib`（双库策略）与 `stack`（栈上限）在原项目里只有文字描述、没有脚本，这里是补上的；
+`cdl` / `conb` 两个 LVS 前置清理原本散落在别处。各条的细节与坑中坑见 [`flow/fixes/README.md`](flow/fixes/README.md)。
+
 ## 7. 签核链：六项，各自的判据
 
 | 签核项 | 开源做法 | 商业对应 | 通过判据（本仓库实测） |

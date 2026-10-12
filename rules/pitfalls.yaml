@@ -20,6 +20,7 @@
     patch_lib.py: 按 cell 块扫描, function 引用的端口未声明时,
     插入 "pin(IQ) { direction : internal; }" (插入点必须在行首 pin/pg_pin 声明前)。
     生成"补丁库", 原始 PDK 库保持不动。注意: yosys/abc 读原库没问题, 补丁库只给 OpenROAD。
+  fix_script: flow/fixes/gen_dff_libs.py --inspect <原始.lib>   # 生成 dffmap / patched 两份库
   verify: read_liberty 通过, 无 Signal 11
   keywords: [liberty, segfault, signal11, iq, opensta, openroad, makePortFuncs]
 
@@ -70,6 +71,7 @@
     为 OpenROAD 打的极简 pin 补丁 (无电容/无时序表) 让 abc 的 liberty 读取器
     找不到时序表。abc 对原始库无此问题。
   fix: 两库分离 - 综合用原始库, 补丁库只给 OpenROAD 用
+  fix_script: flow/fixes/gen_dff_libs.py --apply <原始.lib> <输出目录>
   verify: abc 正常输出 mapped 网表, OpenROAD read_liberty 亦正常
   keywords: [abc, yosys, table, liberty, patch, dfflibmap]
 
@@ -91,6 +93,7 @@
     脚本 docstring 必须是 raw string (r"""), 否则 SyntaxWarning 走 stderr
     会让 Tcl 的 exec 误判为失败而不执行 rename。
     修复后只需重跑 6_report, 无需重跑布线/提取。
+  fix_script: flow/fixes/fix_spef_negidx.py --check <in.spef>   # 总入口 apply_fixes.sh --apply spef
   verify: read_spef exit 0 (实测 789MB SPEF 中仅 63 处, 修复后 2100 万行全量解析通过)
   keywords: [spef, sta-1670, syntax, openrcx, negative, index, escape]
 
@@ -146,6 +149,7 @@
     - "boost::polygon::MaxCover"
   diagnosis: 详细布线在复杂版图上触发深递归, 默认线程栈 (约 8MB) 不够。
   fix: ulimit -s 65536 后重跑 (调大栈上限, 不是工具 bug)
+  fix_script: flow/fixes/run_with_stack.sh <命令>   # 或 source flow/fixes/run_with_stack.sh --export
   verify: 详细布线完成, 无 Signal 11
   keywords: [drt, detailed_route, stack, overflow, signal11, ulimit, maxcover]
 
@@ -163,3 +167,42 @@
   fix: 强制 -j1 串行跑; 必要时分段跑各 stage 以释放内存
   verify: 流程完整跑完, dmesg 无 oom-kill 记录
   keywords: [oom, killed, signal9, memory, -j1, parallel]
+
+- id: PIT-011
+  title: CDL 实例行缺单元名, LVS 读不进网表
+  stage: lvs_prep
+  severity: blocker
+  symptom:
+    - "LVS 器件数对不上"
+    - "X 开头的实例行末尾没有单元名"
+  diagnosis: >
+    OpenROAD 的 write_cdl 偶尔漏掉 X 实例行末尾的单元名。
+    CDL 实例行格式是 X<inst> <pin>(<net>)... <cellname>, 少了单元名,
+    LVS 工具无法判定这是哪种器件, 于是报器件数不匹配或直接读失败。
+  fix: |
+    flow/fixes/fix_cdl.py <cdl> <6_final.v>
+    以 APR 网表 6_final.v 反查 实例 -> 单元类型, 补回缺失的单元名。
+    先用 --check 只诊断: fix_cdl.py --check <cdl> <6_final.v>
+  fix_script: flow/fixes/fix_cdl.py --check <cdl> <6_final.v>
+  verify: CDL 每个 X 行都有单元名, LVS 器件数一致
+  keywords: [cdl, lvs, write_cdl, missing, cellname, instance, netlist]
+
+- id: PIT-012
+  title: conb tie cell 与版图提取网表不一致
+  stage: lvs
+  severity: major
+  symptom:
+    - "LVS 卡在 sky130_fd_sc_hd__conb_1"
+    - "原理图有实例、提取网表里没有"
+  diagnosis: >
+    conb (tie high / tie low) 单元在版图里被 tie 金属短路掉了:
+    LO 直接接 VGND, HI 直接接 VPWR, 提取网表里那个单元根本不存在。
+    原理图 CDL 却保留 conb 实例, 两边拓扑不同, LVS 必然对不上。
+  fix: |
+    flow/fixes/fix_conb_cdl.py <cdl>
+    按版图真实连接改写原理图 CDL: 删 conb 实例, 把 HI 连的网络改名为 VPWR、
+    LO 连的改名为 VGND, 并删掉不再被引用的 conb SUBCKT 定义。
+    先用 --check 只诊断: fix_conb_cdl.py --check <cdl>
+  fix_script: flow/fixes/fix_conb_cdl.py --check <cdl>
+  verify: 提取网表与原理图 CDL 拓扑一致, LVS 通过
+  keywords: [conb, tie, lvs, cdl, vgnd, vpwr, sky130, mismatch]
